@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ADN SMP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Hanken+Grotesk:wght@400;500;700&family=Silkscreen:wght@400;700&display=swap">
+<style>
+  /* Layout: nav, hero texte + logo, grand panneau jaune d'ouverture avec chrono, puis Events (planning en lignes) et Plugins (règle + tuiles de cooldown) */
+  :root {
+    --bg: #0d0a00;
+    --surface: #1a1400;
+    --line: #3a2e00;
+    --fg: #fff1b8;
+    --muted: #b9a45a;
+    --yellow: #ffd400;
+    --amber: #ff9f00;
+    --font-display: "Anton", "Impact", "Arial Narrow", sans-serif;
+    --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-pixel: "Silkscreen", "Courier New", monospace;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { background: var(--bg); scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 56px;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 72px; }
+  section { scroll-margin-top: 16px; }
+
+  nav {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap;
+    font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  nav b { color: var(--yellow); font-weight: 700; }
+  nav .links { display: flex; gap: 20px; flex-wrap: wrap; }
+  nav a { color: var(--muted); text-decoration: none; padding: 4px 0; border-bottom: 2px solid transparent; }
+  nav a:hover { color: var(--yellow); border-bottom-color: var(--yellow); }
+
+  .hero { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; }
+  .hero > * { min-width: 0; }
+  @media (min-width: 820px) { .hero { grid-template-columns: 1.15fr 0.85fr; gap: 48px; } }
+
+  h1 {
+    font-family: var(--font-display); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(80px, 22vw, 190px); line-height: 0.9; margin: 0 0 20px; letter-spacing: 0.005em;
+  }
+  h1 em { font-style: normal; color: var(--yellow); }
+  .lede { font-size: 18px; max-width: 44ch; margin: 0; }
+
+  .art { position: relative; width: 100%; max-width: 380px; aspect-ratio: 1; justify-self: center; border: 2px solid var(--line); overflow: hidden; }
+  .art svg { display: block; width: 100%; height: 100%; }
+
+  h2 {
+    font-family: var(--font-display); font-weight: 400; text-transform: uppercase;
+    font-size: clamp(34px, 7vw, 52px); line-height: 1; margin: 0 0 8px; text-wrap: balance;
+  }
+  h3.group { font-family: var(--font-pixel); font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--yellow); margin: 36px 0 12px; }
+  .sub { margin: 0 0 28px; color: var(--muted); max-width: 58ch; }
+
+  /* Ouverture */
+  .open { background: var(--yellow); color: var(--bg); padding: 28px 22px 30px; display: flex; flex-direction: column; gap: 22px; }
+  .open .kicker { font-family: var(--font-pixel); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .open h2 { margin: 0; font-size: clamp(36px, 8vw, 72px); }
+  .open .when { margin: 0; font-weight: 500; max-width: 52ch; }
+  .count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .count > div { background: var(--bg); color: var(--yellow); padding: 14px 6px 12px; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+  .count b { font-family: var(--font-pixel); font-weight: 700; font-variant-numeric: tabular-nums; font-size: clamp(26px, 8vw, 64px); line-height: 1.05; }
+  .count span { font-family: var(--font-pixel); font-size: clamp(10px, 2.6vw, 13px); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .open.done .count { display: none; }
+
+  /* Events */
+  .tonight { border: 2px solid var(--yellow); background: var(--surface); padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 6px; margin-bottom: 28px; }
+  .tonight .kicker { font-family: var(--font-pixel); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .tonight .name { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(32px, 7vw, 56px); line-height: 1; color: var(--yellow); text-wrap: balance; }
+  .tonight .desc { max-width: 60ch; }
+  .tonight .next { margin-top: 10px; font-family: var(--font-pixel); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .tonight .next b { color: var(--yellow); font-variant-numeric: tabular-nums; font-size: 16px; }
+  .tonight .next b.now { color: var(--amber); }
+
+  .plan { margin: 0; padding: 0; list-style: none; border-bottom: 2px solid var(--line); }
+  .ev { display: grid; grid-template-columns: 1fr; gap: 6px 24px; padding: 20px 16px; border-top: 2px solid var(--line); align-items: baseline; }
+  .ev > * { min-width: 0; }
+  @media (min-width: 760px) { .ev { grid-template-columns: 190px 1fr 90px; } }
+  .ev .day { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .ev h3 { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; font-size: clamp(26px, 4.5vw, 34px); line-height: 1.05; margin: 0 0 4px; color: var(--fg); }
+  .ev p { margin: 0; color: var(--muted); max-width: 58ch; }
+  .ev .time { font-family: var(--font-display); font-size: 28px; line-height: 1; color: var(--yellow); }
+  @media (min-width: 760px) { .ev .time { text-align: right; } }
+  .ev.today { background: var(--surface); border-top-color: var(--yellow); box-shadow: inset 6px 0 0 var(--yellow); }
+  .ev.today .day { color: var(--yellow); }
+  .ev .badge { display: none; }
+  .ev.today .badge { display: inline-block; margin-left: 10px; background: var(--yellow); color: var(--bg); padding: 1px 6px; font-size: 11px; letter-spacing: 0.08em; }
+
+  /* Plugins */
+  .statement { border-left: 6px solid var(--yellow); background: var(--surface); padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 8px; }
+  .statement .tag { font-family: var(--font-pixel); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .statement .big { font-family: var(--font-display); text-transform: uppercase; font-size: clamp(30px, 6.5vw, 52px); line-height: 1.02; text-wrap: balance; }
+  .statement .big em { font-style: normal; color: var(--yellow); }
+  .statement p { margin: 0; color: var(--muted); max-width: 60ch; }
+
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+  .tile { border: 2px solid var(--line); background: var(--surface); padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .tile .item { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); overflow-wrap: anywhere; }
+  .tile .val { font-family: var(--font-display); font-size: clamp(54px, 9vw, 76px); line-height: 1; color: var(--yellow); }
+  .tile .note { color: var(--muted); font-size: 15px; }
+
+  footer {
+    font-family: var(--font-pixel); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); border-top: 2px solid var(--line); padding-top: 16px;
+    display: flex; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap;
+  }
+
+  a:focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <b>ADN SMP</b>
+    <div class="links"><a href="#ouverture">Ouverture</a><a href="#events">Events</a><a href="#plugins">Plugins</a></div>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <h1>ADN<br><em>SMP</em></h1>
+      <p class="lede">Un serveur Minecraft avec un event chaque soir à 19h00 et un vrai combat log. Les portes ouvrent le 6 novembre.</p>
+    </div>
+
+    <div class="art" aria-hidden="true">
+      <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" focusable="false">
+        <defs>
+          <radialGradient id="g-bg" cx="0.5" cy="0.5" r="0.75"><stop offset="0" stop-color="#2b2200"/><stop offset="1" stop-color="#0d0a00"/></radialGradient>
+          <linearGradient id="g-a" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffe600"/><stop offset="1" stop-color="#ffc400"/></linearGradient>
+          <linearGradient id="g-b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb300"/><stop offset="1" stop-color="#ff8c00"/></linearGradient>
+          <filter id="g-glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <g id="g-unit">
+            <g stroke="#fff6b0" stroke-opacity="0.7" stroke-width="5" stroke-linecap="round">
+              <line x1="32" y1="192.4" x2="32" y2="319.6"/><line x1="64" y1="166" x2="64" y2="346"/><line x1="96" y1="192.4" x2="96" y2="319.6"/>
+              <line x1="160" y1="192.4" x2="160" y2="319.6"/><line x1="192" y1="166" x2="192" y2="346"/><line x1="224" y1="192.4" x2="224" y2="319.6"/>
+            </g>
+            <path d="M0 256 C46.6 376 81.4 376 128 256 C174.6 136 209.4 136 256 256" fill="none" stroke="url(#g-a)" stroke-width="12" stroke-linecap="round"/>
+            <path d="M0 256 C46.6 136 81.4 136 128 256 C174.6 376 209.4 376 256 256" fill="none" stroke="url(#g-b)" stroke-width="12" stroke-linecap="round"/>
+          </g>
+        </defs>
+        <rect width="512" height="512" fill="url(#g-bg)"/>
+        <text x="256" y="330" text-anchor="middle" textLength="460" lengthAdjust="spacingAndGlyphs" font-family="Anton, Impact, sans-serif" font-size="230" fill="#ffd400" fill-opacity="0.18">SMP</text>
+        <text x="256" y="330" text-anchor="middle" textLength="460" lengthAdjust="spacingAndGlyphs" font-family="Anton, Impact, sans-serif" font-size="230" fill="none" stroke="#ffd400" stroke-opacity="0.5" stroke-width="2">SMP</text>
+        <g filter="url(#g-glow)" transform="rotate(90 256 256) translate(256 256) scale(1.6) translate(-256 -256)">
+          <use href="#g-unit" x="0"/><use href="#g-unit" x="256"/>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <section id="ouverture">
+    <div class="open" id="open">
+      <span class="kicker" id="open-kicker">Ouverture du serveur</span>
+      <h2 id="open-title">Les portes ouvrent le 6 novembre 2026 à 21h00</h2>
+      <p class="when">Heure de Paris (France). Le chronomètre s'arrête quand le serveur ouvre.</p>
+      <div class="count" role="timer" aria-live="off">
+        <div><b id="c-d">--</b><span>Jours</span></div>
+        <div><b id="c-h">--</b><span>Heures</span></div>
+        <div><b id="c-m">--</b><span>Minutes</span></div>
+        <div><b id="c-s">--</b><span>Secondes</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="events">
+    <h2>Events</h2>
+    <p class="sub">Un event par soir, toujours à 19h00, heure de Paris. Connecte-toi vers 18h55 pour être prêt au début.</p>
+
+    <div class="tonight">
+      <span class="kicker">Au programme aujourd'hui · 19h00</span>
+      <span class="name" id="tonight-name">Event du jour</span>
+      <span class="desc" id="tonight-desc">Retrouve le programme de la semaine ci-dessous.</span>
+      <span class="next"><span id="clock-label">Prochain event dans</span> <b id="clock-digits">--:--:--</b></span>
+    </div>
+
+    <ul class="plan">
+      <li class="ev" data-d="Mon">
+        <span class="day">Lundi<span class="badge">Ce soir</span></span>
+        <div><h3>Course de construction</h3><p>Un thème est tiré au sort. Vous avez 20 minutes pour construire le truc le plus réussi, puis vote à la fin.</p></div>
+        <span class="time">19h00</span>
+      </li>
+      <li class="ev" data-d="Tue">
+        <span class="day">Mardi<span class="badge">Ce soir</span></span>
+        <div><h3>Chasse au trésor</h3><p>L'un de vous cache des coffres avec des récompenses et donne des indices dans le chat. Le premier qui trouve gagne.</p></div>
+        <span class="time">19h00</span>
+      </li>
+      <li class="ev" data-d="Wed">
+        <span class="day">Mercredi<span class="badge">Ce soir</span></span>
+        <div><h3>Mini-jeux</h3><p>Parkour, spleef ou bataille de boules de neige. Un point par victoire.</p></div>
+        <span class="time">19h00</span>
+      </li>
+      <li class="ev" data-d="Thu">
+        <span class="day">Jeudi<span class="badge">Ce soir</span></span>
+        <div><h3>Expédition</h3><p>Sortie en groupe au Nether, au End ou dans une structure, avec un objectif commun : tuer un boss ou ramener un objet précis.</p></div>
+        <span class="time">19h00</span>
+      </li>
+      <li class="ev" data-d="Fri">
+        <span class="day">Vendredi<span class="badge">Ce soir</span></span>
+        <div><h3>Tournoi PvP</h3><p>Combats en 1 contre 1 avec des kits identiques pour tout le monde, puis finale.</p></div>
+        <span class="time">19h00</span>
+      </li>
+      <li class="ev" data-d="Sat">
+        <span class="day">Samedi<span class="badge">Ce soir</span></span>
+        <div><h3>Défi de survie</h3><p>Un objectif à atteindre en une heure, par exemple une armure en diamant. En équipe ou chacun pour soi.</p></div>
+        <span class="time">19h00</span>
+      </li>
+      <li class="ev" data-d="Sun">
+        <span class="day">Dimanche<span class="badge">Ce soir</span></span>
+        <div><h3>Soirée détente</h3><p>Visite des bases, prix aux meilleures constructions de la semaine et classement général.</p></div>
+        <span class="time">19h00</span>
+      </li>
+    </ul>
+  </section>
+
+  <section id="plugins">
+    <h2>Plugins</h2>
+    <p class="sub">Les règles de combat du serveur et les temps de recharge des objets.</p>
+
+    <div class="statement">
+      <span class="tag">Combat log</span>
+      <span class="big">Tu quittes en combat, <em>tu meurs.</em></span>
+      <p>Un vrai combat log, comme sur Donut SMP. Se déconnecter pendant un combat pour y échapper ne marche pas.</p>
+    </div>
+
+    <h3 class="group">Cooldowns</h3>
+    <ul class="tiles">
+      <li class="tile"><span class="item">Mace</span><span class="val">10 s</span><span class="note">Temps de recharge entre deux utilisations.</span></li>
+      <li class="tile"><span class="item">Ender pearl</span><span class="val">10 s</span><span class="note">Temps de recharge entre deux lancers.</span></li>
+      <li class="tile"><span class="item">Enchanted golden apple</span><span class="val">60 s</span><span class="note">Temps de recharge entre deux pommes.</span></li>
+    </ul>
+
+    <h3 class="group">En combat</h3>
+    <ul class="tiles">
+      <li class="tile"><span class="item">Fireworks</span><span class="val">Off</span><span class="note">Désactivés pendant un combat.</span></li>
+      <li class="tile"><span class="item">Elytra</span><span class="val">OK</span><span class="note">Autorisées pendant un combat.</span></li>
+    </ul>
+  </section>
+
+  <footer><span>ADN SMP</span><span>Ouverture le 6 novembre 2026 · 21h00</span></footer>
+</div>
+
+<script>
+(function () {
+  var TZ = "Europe/Paris";
+  // 6 novembre 2026, 21h00 à Paris (heure d'hiver, UTC+1) = 20h00 UTC
+  var OPEN_AT = Date.UTC(2026, 10, 6, 20, 0, 0);
+
+  var el = function (id) { return document.getElementById(id); };
+  var cd = el("c-d"), ch = el("c-h"), cm = el("c-m"), cs = el("c-s");
+  var openBox = el("open"), openTitle = el("open-title"), openKicker = el("open-kicker");
+  var digits = el("clock-digits"), label = el("clock-label");
+  var tName = el("tonight-name"), tDesc = el("tonight-desc");
+  var rows = document.querySelectorAll(".ev");
+  var fmt = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, weekday: "short" });
+  var shown = "";
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  function tickOpen() {
+    var diff = Math.floor((OPEN_AT - Date.now()) / 1000);
+    if (diff <= 0) {
+      openBox.classList.add("done");
+      openKicker.textContent = "ADN SMP";
+      openTitle.textContent = "Le serveur est ouvert";
+      return;
+    }
+    cd.textContent = pad(Math.floor(diff / 86400));
+    ch.textContent = pad(Math.floor((diff % 86400) / 3600));
+    cm.textContent = pad(Math.floor((diff % 3600) / 60));
+    cs.textContent = pad(diff % 60);
+  }
+
+  function setToday(day) {
+    for (var i = 0; i < rows.length; i++) {
+      var on = rows[i].getAttribute("data-d") === day;
+      rows[i].classList.toggle("today", on);
+      if (on) {
+        tName.textContent = rows[i].querySelector("h3").textContent;
+        tDesc.textContent = rows[i].querySelector("p").textContent;
+      }
+    }
+  }
+
+  function tickEvent() {
+    var parts = {};
+    fmt.formatToParts(new Date()).forEach(function (p) { parts[p.type] = p.value; });
+    var h = parseInt(parts.hour, 10) % 24, m = parseInt(parts.minute, 10), s = parseInt(parts.second, 10);
+    var secs = 19 * 3600 - (h * 3600 + m * 60 + s);
+    var live = (secs <= 0 && secs > -300);
+    if (secs <= 0) secs += 86400;
+
+    if (live) {
+      label.textContent = "L'event commence";
+      digits.textContent = "maintenant";
+      digits.className = "now";
+    } else {
+      label.textContent = "Prochain event dans";
+      digits.textContent = pad(Math.floor(secs / 3600)) + ":" + pad(Math.floor((secs % 3600) / 60)) + ":" + pad(secs % 60);
+      digits.className = "";
+    }
+    if (parts.weekday !== shown) { shown = parts.weekday; setToday(shown); }
+  }
+
+  function tick() { tickOpen(); tickEvent(); }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+
+</body>
+</html>
