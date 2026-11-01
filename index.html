@@ -115,7 +115,9 @@
   .tile { border: 2px solid var(--line); background: var(--surface); padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .tile .item { font-family: var(--font-pixel); font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg); overflow-wrap: anywhere; }
   .tile .val { font-family: var(--font-display); font-size: clamp(54px, 9vw, 76px); line-height: 1; color: var(--yellow); }
+  .tile .val.sm { font-size: clamp(34px, 6vw, 46px); line-height: 1.05; }
   .tile .note { color: var(--muted); font-size: 15px; }
+  .statement + .tiles { margin-top: 12px; }
 
   footer {
     font-family: var(--font-pixel); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
@@ -233,7 +235,7 @@
 
   <section id="plugins">
     <h2>Plugins</h2>
-    <p class="sub">Les règles de combat du serveur et les temps de recharge des objets.</p>
+    <p class="sub">Tout ce qui change sur le serveur : combat, vie, pactes, mace, wind charges et boutiques.</p>
 
     <div class="statement">
       <span class="tag">Combat log</span>
@@ -252,6 +254,44 @@
     <ul class="tiles">
       <li class="tile"><span class="item">Fireworks</span><span class="val">Off</span><span class="note">Désactivés pendant un combat.</span></li>
       <li class="tile"><span class="item">Elytra</span><span class="val">OK</span><span class="note">Autorisées pendant un combat.</span></li>
+    </ul>
+
+    <h3 class="group">Lifesteal SMP</h3>
+    <div class="statement">
+      <span class="big">Tu tues un joueur, <em>tu lui voles un cœur.</em></span>
+      <p>Le principe : chaque kill te donne un cœur de plus et en retire un à ta victime. Plus tu gagnes de combats, plus tu as de vie.</p>
+    </div>
+
+    <h3 class="group">Kamoof SMP</h3>
+    <div class="statement">
+      <span class="big">Des rituels, <em>deux pactes.</em></span>
+      <p>Pour faire un rituel, il faut placer 10 têtes différentes. Il donne accès à deux pactes différents. L'effet d'un pacte se perd quand tu meurs.</p>
+    </div>
+    <ul class="tiles">
+      <li class="tile"><span class="item">Pacte 1</span><span class="val sm">+5 cœurs</span><span class="note">Ta tête drop 3 fois quand tu meurs.</span></li>
+      <li class="tile"><span class="item">Pacte 2</span><span class="val sm">Weakness I</span><span class="note">Ta tête ne drop pas quand tu meurs.</span></li>
+      <li class="tile"><span class="item">Tête de déguisement</span><span class="val sm">Skin + pseudo</span><span class="note">Clic droit sur la tête : tu prends le même skin et le même pseudo que le joueur en qui tu te déguises.</span></li>
+    </ul>
+
+    <h3 class="group">Mace unique</h3>
+    <div class="statement">
+      <span class="big">Une seule mace <em>sur le serveur.</em></span>
+      <p>Elle a un enchantement en plus : quand tu frappes quelqu'un avec la mace, un éclair tombe sur lui.</p>
+    </div>
+
+    <h3 class="group">Wind charge reset</h3>
+    <div class="statement">
+      <span class="big">Wind charge sous toi, <em>chute ralentie.</em></span>
+      <p>Comme sur Minemen : quand tu mets une wind charge sous toi en l'air, elle te touche et ralentit ta chute.</p>
+    </div>
+
+    <h3 class="group">Économie et boutiques</h3>
+    <div class="statement">
+      <span class="big">String dupers autorisés, <em>émeraudes quasi illimitées.</em></span>
+      <p>Les string dupers marchent, donc tu peux avoir des émeraudes presque à l'infini. Elles servent dans les boutiques modifiées du spawn.</p>
+    </div>
+    <ul class="tiles">
+      <li class="tile"><span class="item">Boutique du spawn</span><span class="val sm">3 émeraudes</span><span class="note">Exemple : 1 cobweb coûte 3 émeraudes.</span></li>
     </ul>
   </section>
 
